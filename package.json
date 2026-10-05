@@ -1,0 +1,37 @@
+{
+  "name": "hideko-lite-editor",
+  "version": "1.0.0",
+  "description": "Hideko Lite Editor - High-Performance Virtual Input Code Editor (Monaco Architecture)",
+  "type": "module",
+  "main": "./dist/hidekomaxline.umd.js",
+  "module": "./dist/hidekomaxline.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/hidekomaxline.js",
+      "require": "./dist/hidekomaxline.umd.js"
+    },
+    "./style.css": "./dist/style.css",
+    "./languages/*": "./dist/languages/*.js",
+    "./languages": "./dist/languages/index.js"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/build-languages.js",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "editor",
+    "code-editor",
+    "virtual-input",
+    "syntax-highlighter",
+    "monarch"
+  ],
+  "author": "Wirot Chookeaw Chin6700x <Chin6700X@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.21.5",
+    "vite": "^5.4.2"
+  }
+}

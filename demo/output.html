@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hideko Export - vite.config.js</title>
+    <style>
+        /* ฝัง CSS ของไลบรารี */
+        :root,[data-theme=dark]{--hideko-bg: #1e1e1e;--hideko-fg: #d4d4d4;--hideko-caret: #ffffff;--hideko-border: rgba(128, 128, 128, .2);--hideko-gutter-bg: #1e1e1e;--hideko-gutter-fg: #858585;--hideko-gutter-active: #c6c6c6;--hideko-active-line: rgba(255, 255, 255, .04);--hideko-line-highlight: rgba(255, 215, 0, .12);--hideko-line-highlight-border: #ffd700;--mtk1: #d4d4d4;--mtk2: #1e1e1e;--mtk3: #000080;--mtk4: #6a9955;--mtk5: #569cd6;--mtk6: #b5cea8;--mtk7: #ce9178;--mtk8: #808080;--mtk9: #4ec9b0;--mtk10: #dcdcaa;--mtk11: #9cdcfe;--mtk12: #d4d4d4;--mtk13: #4fc1ff;--mtk14: #d7ba7d}[data-theme=light]{--hideko-bg: #ffffff;--hideko-fg: #333333;--hideko-caret: #000000;--hideko-border: rgba(0, 0, 0, .1);--hideko-gutter-bg: #f8f9fa;--hideko-gutter-fg: #999999;--hideko-gutter-active: #222222;--hideko-active-line: rgba(0, 0, 0, .04);--hideko-line-highlight: rgba(255, 215, 0, .2);--hideko-line-highlight-border: #d4a017;--mtk1: #000000;--mtk2: #ffffff;--mtk3: #000080;--mtk4: #008000;--mtk5: #0000ff;--mtk6: #098658;--mtk7: #a31515;--mtk8: #800000;--mtk9: #267f99;--mtk10: #795e26;--mtk11: #001080;--mtk12: #000000;--mtk13: #0000ff;--mtk14: #811f3f}[data-theme=dracula]{--hideko-bg: #282a36;--hideko-fg: #f8f8f2;--hideko-caret: #f8f8f0;--hideko-border: rgba(98, 114, 164, .3);--hideko-gutter-bg: #282a36;--hideko-gutter-fg: #6272a4;--hideko-gutter-active: #f8f8f2;--hideko-active-line: rgba(255, 255, 255, .06);--hideko-line-highlight: rgba(189, 147, 249, .18);--hideko-line-highlight-border: #bd93f9;--mtk1: #f8f8f2;--mtk2: #282a36;--mtk3: #bd93f9;--mtk4: #6272a4;--mtk5: #ff79c6;--mtk6: #bd93f9;--mtk7: #f1fa8c;--mtk8: #ff79c6;--mtk9: #8be9fd;--mtk10: #50fa7b;--mtk11: #f8f8f2;--mtk12: #ff79c6;--mtk13: #bd93f9;--mtk14: #ffb86c}[data-theme=one-dark]{--hideko-bg: #282c34;--hideko-fg: #abb2bf;--hideko-caret: #528bff;--hideko-border: rgba(171, 178, 191, .2);--hideko-gutter-bg: #282c34;--hideko-gutter-fg: #5c6370;--hideko-gutter-active: #abb2bf;--hideko-active-line: rgba(255, 255, 255, .05);--hideko-line-highlight: rgba(97, 175, 239, .16);--hideko-line-highlight-border: #61afef;--mtk1: #abb2bf;--mtk2: #282c34;--mtk3: #528bff;--mtk4: #5c6370;--mtk5: #c678dd;--mtk6: #d19a66;--mtk7: #98c379;--mtk8: #abb2bf;--mtk9: #e5c07b;--mtk10: #61afef;--mtk11: #e06c75;--mtk12: #56b6c2;--mtk13: #d19a66;--mtk14: #be5046}[data-theme=nord]{--hideko-bg: #2e3440;--hideko-fg: #d8dee9;--hideko-caret: #88c0d0;--hideko-border: rgba(136, 192, 208, .2);--hideko-gutter-bg: #2e3440;--hideko-gutter-fg: #4c566a;--hideko-gutter-active: #d8dee9;--hideko-active-line: rgba(255, 255, 255, .05);--hideko-line-highlight: rgba(136, 192, 208, .18);--hideko-line-highlight-border: #88c0d0;--mtk1: #d8dee9;--mtk2: #2e3440;--mtk3: #81a1c1;--mtk4: #616e88;--mtk5: #81a1c1;--mtk6: #b48ead;--mtk7: #a3be8c;--mtk8: #81a1c1;--mtk9: #8fbcbb;--mtk10: #88c0d0;--mtk11: #d8dee9;--mtk12: #81a1c1;--mtk13: #d08770;--mtk14: #ebcb8b}[data-theme=monokai]{--hideko-bg: #272822;--hideko-fg: #f8f8f2;--hideko-caret: #f8f8f0;--hideko-border: rgba(248, 248, 242, .2);--hideko-gutter-bg: #272822;--hideko-gutter-fg: #75715e;--hideko-gutter-active: #f8f8f2;--hideko-active-line: rgba(255, 255, 255, .06);--hideko-line-highlight: rgba(230, 219, 116, .18);--hideko-line-highlight-border: #e6db74;--mtk1: #f8f8f2;--mtk2: #272822;--mtk3: #ae81ff;--mtk4: #75715e;--mtk5: #f92672;--mtk6: #ae81ff;--mtk7: #e6db74;--mtk8: #f8f8f2;--mtk9: #66d9ef;--mtk10: #a6e22e;--mtk11: #fd971f;--mtk12: #f92672;--mtk13: #ae81ff;--mtk14: #e6db74}[data-theme=github-dark]{--hideko-bg: #0d1117;--hideko-fg: #c9d1d9;--hideko-caret: #58a6ff;--hideko-border: rgba(240, 246, 252, .15);--hideko-gutter-bg: #0d1117;--hideko-gutter-fg: #484f58;--hideko-gutter-active: #c9d1d9;--hideko-active-line: rgba(255, 255, 255, .04);--hideko-line-highlight: rgba(88, 166, 255, .15);--hideko-line-highlight-border: #58a6ff;--mtk1: #c9d1d9;--mtk2: #0d1117;--mtk3: #58a6ff;--mtk4: #8b949e;--mtk5: #ff7b72;--mtk6: #79c0ff;--mtk7: #a5d6ff;--mtk8: #c9d1d9;--mtk9: #ffa657;--mtk10: #d2a8ff;--mtk11: #ffa657;--mtk12: #79c0ff;--mtk13: #79c0ff;--mtk14: #7ee787}.hideko-editor-container{width:100%;height:100%;background:var(--hideko-bg);display:flex;position:relative;border-radius:6px;border:1px solid var(--hideko-border);box-sizing:border-box;overflow:hidden}.hideko-editor-gutter{width:50px;background:var(--hideko-gutter-bg);color:var(--hideko-gutter-fg);font-family:var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);font-size:14px;line-height:1.5;text-align:right;padding:10px 10px 10px 0;-webkit-user-select:none;user-select:none;overflow:hidden;border-right:1px solid var(--hideko-border);z-index:10;box-sizing:border-box}.hideko-editor-gutter-line{height:21px;padding-right:6px;transition:color .15s ease}.hideko-editor-gutter-line.active{color:var(--hideko-gutter-active);font-weight:700}.hideko-editor-content{position:relative;flex-grow:1;overflow:hidden}.hideko-editor-textarea,.hideko-editor-pre{position:absolute;top:0;left:0;width:100%;height:100%;margin:0;padding:10px;box-sizing:border-box;border:none;-moz-tab-size:4;tab-size:4;white-space:pre;font-family:var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);font-size:14px;line-height:1.5}.hideko-editor-pre code{font-family:inherit;font-size:inherit;line-height:inherit}.hideko-editor-textarea{color:transparent;background:transparent;caret-color:var(--hideko-caret);z-index:10;outline:none;resize:none;overflow:scroll!important;-webkit-appearance:textarea;scrollbar-width:auto;scrollbar-color:rgba(128,128,128,.8) rgba(0,0,0,.05)}.hideko-editor-pre{overflow:hidden;color:var(--hideko-fg);background:var(--hideko-bg);z-index:1;pointer-events:none}.hideko-editor-textarea::-webkit-scrollbar{width:14px;height:14px}.hideko-editor-textarea::-webkit-scrollbar-track{background:#0000000d}.hideko-editor-textarea::-webkit-scrollbar-thumb{background-color:#808080cc;border-radius:8px;border:2px solid transparent;background-clip:padding-box}.hideko-editor-textarea::-webkit-scrollbar-thumb:hover{background-color:gray}.hideko-editor-textarea::-webkit-scrollbar-corner{background:transparent}.mtk1{color:var(--mtk1)}.mtk2{color:var(--mtk2)}.mtk3{color:var(--mtk3)}.mtk4{color:var(--mtk4);font-style:italic}.mtk5{color:var(--mtk5);font-weight:700}.mtk6{color:var(--mtk6)}.mtk7{color:var(--mtk7)}.mtk8{color:var(--mtk8)}.mtk9{color:var(--mtk9)}.mtk10{color:var(--mtk10)}.mtk11{color:var(--mtk11)}.mtk12{color:var(--mtk12)}.mtk13{color:var(--mtk13);font-weight:700}.mtk14{color:var(--mtk14)}.hideko-theme-block{background-color:var(--hideko-bg)!important;color:var(--hideko-fg)!important}.hideko-pre-block{position:relative;width:100%;height:auto;overflow:auto;padding:15px;margin:0;border-radius:6px;border:1px solid var(--hideko-border);pointer-events:auto;font-family:var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);font-size:14px;line-height:1.5;box-sizing:border-box}.hideko-line{display:block;min-height:1.5em;padding:0 4px;border-left:3px solid transparent}.hideko-line.hideko-line-highlighted{background-color:var(--hideko-line-highlight);border-left:3px solid var(--hideko-line-highlight-border)}.hideko-copy-btn{display:inline-flex;align-items:center;gap:4px;position:absolute;top:8px;right:8px;padding:5px 9px;font-size:12px;font-family:system-ui,-apple-system,sans-serif;cursor:pointer;background:#80808033;border:1px solid var(--hideko-border);color:inherit;border-radius:5px;z-index:15;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);transition:all .2s ease}.hideko-copy-btn:hover{background:#80808059}.hideko-copy-btn.copied{background:#4caf504d;border-color:#4caf5099;color:#4caf50}
+
+
+        /* ตกแต่งหน้าเว็บเพิ่มเติม */
+        body { 
+            background-color: #121212; 
+            color: #d4d4d4; 
+            padding: 2rem; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #555;
+            padding-bottom: 0.5rem;
+        }
+        .hideko-pre-block {
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>📄 vite.config.js</h2>
+            <p>Language: <strong>javascript</strong> | Generated in: <strong>1.33 ms</strong></p>
+        </div>
+        
+        <!-- แท็กหุ้มที่ใส่ data-theme ให้ตรงกับ options -->
+        <div class="hideko-theme-block" data-theme="dark">
+            <pre class="hideko-pre-block"><code><span class="mtk5">import</span> <span class="mtk8">{</span> <span class="mtk11">defineConfig</span> <span class="mtk8">}</span> <span class="mtk5">from</span> <span class="mtk7">&#039;</span><span class="mtk7">vite</span><span class="mtk7">&#039;</span><span class="mtk8">;</span>
+<span class="mtk5">import</span> <span class="mtk8">{</span> <span class="mtk11">resolve</span> <span class="mtk8">}</span> <span class="mtk5">from</span> <span class="mtk7">&#039;</span><span class="mtk7">path</span><span class="mtk7">&#039;</span><span class="mtk8">;</span>
+
+<span class="mtk5">export</span> <span class="mtk5">default</span> <span class="mtk11">defineConfig</span><span class="mtk8">(</span><span class="mtk8">{</span>
+  <span class="mtk11">build</span><span class="mtk11">:</span> <span class="mtk8">{</span>
+    <span class="mtk11">lib</span><span class="mtk11">:</span> <span class="mtk8">{</span>
+      <span class="mtk11">entry</span><span class="mtk11">:</span> <span class="mtk11">resolve</span><span class="mtk8">(</span><span class="mtk11">__dirname</span><span class="mtk8">,</span> <span class="mtk7">&#039;</span><span class="mtk7">src/index.js</span><span class="mtk7">&#039;</span><span class="mtk8">)</span><span class="mtk8">,</span>
+      <span class="mtk11">name</span><span class="mtk11">:</span> <span class="mtk7">&#039;</span><span class="mtk7">HidekoV8</span><span class="mtk7">&#039;</span><span class="mtk8">,</span>
+      <span class="mtk11">fileName</span><span class="mtk11">:</span> <span class="mtk8">(</span><span class="mtk11">format</span><span class="mtk8">)</span> <span class="mtk11">=&gt;</span> <span class="mtk7">`</span><span class="mtk7">lib-hidekov8.</span><span class="mtk8">${</span><span class="mtk11">format</span> <span class="mtk11">===</span> <span class="mtk7">&#039;</span><span class="mtk7">es</span><span class="mtk7">&#039;</span> <span class="mtk11">?</span> <span class="mtk7">&#039;</span><span class="mtk7">js</span><span class="mtk7">&#039;</span> <span class="mtk11">:</span> <span class="mtk7">&#039;</span><span class="mtk7">umd.js</span><span class="mtk7">&#039;</span><span class="mtk8">}</span><span class="mtk7">`</span><span class="mtk8">,</span>
+      <span class="mtk11">formats</span><span class="mtk11">:</span> <span class="mtk8">[</span><span class="mtk7">&#039;</span><span class="mtk7">es</span><span class="mtk7">&#039;</span><span class="mtk8">,</span> <span class="mtk7">&#039;</span><span class="mtk7">umd</span><span class="mtk7">&#039;</span><span class="mtk8">]</span>
+    <span class="mtk8">}</span><span class="mtk8">,</span>
+    <span class="mtk11">rollupOptions</span><span class="mtk11">:</span> <span class="mtk8">{</span>
+      <span class="mtk11">output</span><span class="mtk11">:</span> <span class="mtk8">{</span>
+        <span class="mtk11">exports</span><span class="mtk11">:</span> <span class="mtk7">&#039;</span><span class="mtk7">named</span><span class="mtk7">&#039;</span>
+      <span class="mtk8">}</span>
+    <span class="mtk8">}</span>
+  <span class="mtk8">}</span><span class="mtk8">,</span>
+  <span class="mtk11">test</span><span class="mtk11">:</span> <span class="mtk8">{</span>
+    <span class="mtk11">environment</span><span class="mtk11">:</span> <span class="mtk7">&#039;</span><span class="mtk7">jsdom</span><span class="mtk7">&#039;</span>
+  <span class="mtk8">}</span>
+<span class="mtk8">}</span><span class="mtk8">)</span><span class="mtk8">;</span>
+</code></pre>
+        </div>
+    </div>
+</body>
+</html>

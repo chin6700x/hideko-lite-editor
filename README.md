@@ -4,12 +4,12 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Vite](https://img.shields.io/badge/bundler-Vite%205-646CFF.svg)](https://vitejs.dev/)
-[![Dependencies](https://img.shields.io/badge/dependencies-0%20runtime-brightgreen.svg)]()
-[![Architecture](https://img.shields.io/badge/architecture-Monaco%20Virtual%20Input-purple.svg)]()
+[![Dependencies](https://img.shields.io/badge/dependencies-0%20runtime-brightgreen.svg)]
+[![Architecture](https://img.shields.io/badge/architecture-Monaco%20Virtual%20Input-purple.svg)]
 
 **hideko-lite-editor** is a blazing-fast, zero-dependency code editor and syntax highlighting engine designed for modern web applications. Inspired by VS Code's Monaco architecture, it replaces heavy, sluggish DOM textareas with an ultra-lightweight **1px Floating Input Sink** and a **Virtual Buffer Engine**, allowing you to smoothly edit and highlight code files from 10 lines up to **100,000+ lines** with zero glyph-shaping overhead (< 0.1ms) and 60 FPS performance.
 
-* **Author**: Wirot Chookeaw Chin6700x (<Chin6700X@gmail.com>)
+* **Author**: [Wirot Chookeaw Chin6700x](https://github.com/chin6700x) 
 * **License**: MIT License
 
 ---
@@ -265,6 +265,5 @@ Switch themes at any time by setting `data-theme` on the container or calling `e
 
 ## 📄 License & Attribution
 
-* **Author**: [Wirot Chookeaw Chin6700x](https://github.com/chin6700x) 
+* **Author**: [Wirot Chookeaw Chin6700x](https://github.com/chin6700x) (<Chin6700X@gmail.com>)
 * **License**: MIT License — free for both personal and commercial use.
-# hideko-lite-editor

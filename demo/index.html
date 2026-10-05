@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HidekoV8 — High-Performance Syntax Highlighter & Micro-Editor</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../dist/style.css?v=1.1.2">
+    <style>
+        :root {
+            --surface-bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-primary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--surface-bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 2.5rem 1.5rem 1.5rem;
+            text-align: center;
+            background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.15), transparent 70%);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 500;
+            background: rgba(139, 92, 246, 0.12);
+            color: #c4b5fd;
+            border: 1px solid rgba(139, 92, 246, 0.25);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin: 0 0 0.5rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 680px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--card-border);
+            margin-bottom: 1.25rem;
+        }
+
+        .tool-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        select,
+        button,
+        .file-btn {
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            padding: 7px 12px;
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        select:hover,
+        button:hover,
+        .file-btn:hover {
+            border-color: var(--accent-primary);
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        button.btn-primary {
+            background: var(--accent-gradient);
+            border: none;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        button.btn-primary:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        .editor-container-wrapper {
+            height: 480px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+        }
+
+        .benchmark-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #38bdf8;
+            font-family: 'Fira Code', monospace;
+            margin-top: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 16px;
+            background: rgba(15, 23, 42, 0.9);
+            border-top: 1px solid var(--card-border);
+            font-size: 12px;
+            font-family: 'Fira Code', monospace;
+            color: var(--text-muted);
+            border-radius: 0 0 8px 8px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .feature-item {
+            padding: 1.25rem;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--card-border);
+        }
+
+        .feature-item h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1rem;
+            color: #c4b5fd;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-item p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .static-preview-box {
+            display: none;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="badge-row">
+            <span class="badge">🚀 Mini-Monarch Engine</span>
+            <span class="badge">🎨 14 Token Classes</span>
+            <span class="badge">⚡ Zero Dependencies</span>
+            <span class="badge">📦 v1.1.0 Production Ready</span>
+        </div>
+        <h1>Hideko V8 Playground & Showcase</h1>
+        <p class="subtitle">High-performance syntax highlighter and interactive micro-editor. Ultra-lightweight, blazing-fast, and built for modern web applications.</p>
+    </header>
+
+    <main>
+        <!-- Section 1: Live Interactive Editor -->
+        <div class="card">
+            <div class="toolbar">
+                <div class="tool-group">
+                    <label for="theme-select">Theme:</label>
+                    <select id="theme-select">
+                        <option value="dark" selected>VS Code Dark (Default)</option>
+                        <option value="light">VS Code Light</option>
+                        <option value="dracula">Dracula</option>
+                        <option value="one-dark">One Dark Pro</option>
+                        <option value="nord">Nord</option>
+                        <option value="monokai">Monokai Pro</option>
+                        <option value="github-dark">GitHub Dark</option>
+                    </select>
+
+                    <label for="lang-select">Language:</label>
+                    <select id="lang-select">
+                        <option value="javascript" selected>JavaScript</option>
+                        <option value="typescript">TypeScript</option>
+                        <option value="python">Python</option>
+                        <option value="c">C / C++</option>
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="sql">SQL</option>
+                        <option value="json">JSON</option>
+                        <option value="markdown">Markdown</option>
+                        <option value="shell">Shell / Bash</option>
+                    </select>
+
+                    <label for="file-upload" class="file-btn">📂 Open Local File</label>
+                    <input type="file" id="file-upload" style="display: none;" accept=".js,.ts,.py,.c,.cpp,.h,.html,.css,.json,.md,.sql,.sh">
+                </div>
+
+                <button type="button" id="btn-40k" style="background: rgba(139, 92, 246, 0.25); border: 1px solid #8b5cf6; color: #c4b5fd; font-weight: 600;">⚡ Test 40,000 Lines</button>
+                <button type="button" id="btn-100k" style="background: rgba(59, 130, 246, 0.25); border: 1px solid #3b82f6; color: #93c5fd; font-weight: 600;">🚀 Test 100,000 Lines</button>
+                <button type="button" id="btn-toggle-mode">Switch to Static View</button>
+                <button type="button" class="btn-primary" id="btn-run-benchmark">⚡ Run Benchmark</button>
+            </div>
+        </div>
+
+        <!-- Editor Wrapper -->
+        <div id="editor-wrapper" class="editor-container-wrapper">
+            <div id="main-editor"></div>
+        </div>
+
+        <!-- Static Preview (Hidden by default) -->
+        <div id="static-preview" class="static-preview-box">
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+                Static View with <code>h-highlight="3-6,9"</code> (Line Highlighting):
+            </p>
+            <div id="static-output"></div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span id="sb-lang">Language: JavaScript</span>
+            <span id="sb-line">Ln 1, Col 1</span>
+            <span id="sb-selection" style="color: #60a5fa;">Selection: None</span>
+            <span id="sb-latency" style="color: #4ade80; font-weight: bold;">⚡ Latency: 0.00 ms</span>
+            <span id="sb-theme">Theme: Dark</span>
+            <span id="sb-mem">RAM: ~0.02 MB</span>
+        </div>
+
+        <!-- Public JavaScript API Showcase & Controls for WebApp -->
+        <div style="margin-top: 1rem; padding: 12px; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 600; color: #c4b5fd;">🌐 External WebApp Public JavaScript API Test</span>
+                <span id="api-status" style="font-size: 12px; color: #94a3b8; font-family: 'Fira Code', monospace;">Ready</span>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" id="btn-api-select-all" style="font-size: 12px; padding: 5px 10px;">📋 Select All (selectAll)</button>
+                <button type="button" id="btn-api-select-range" style="font-size: 12px; padding: 5px 10px;">🎯 Select Lines 2-5 (setSelection)</button>
+                <button type="button" id="btn-api-get-info" style="font-size: 12px; padding: 5px 10px;">🔍 Get Selection Info (getSelection)</button>
+                <button type="button" id="btn-api-replace" style="font-size: 12px; padding: 5px 10px;">✏️ Replace Selection (replaceSelection)</button>
+                <button type="button" id="btn-api-jump-50k" style="font-size: 12px; padding: 5px 10px;">🚀 Jump to Line 50,000 (scrollToLine)</button>
+                <button type="button" id="btn-api-clear-sel" style="font-size: 12px; padding: 5px 10px;">❌ Clear Selection (clearSelection)</button>
+                <button type="button" id="btn-api-toggle-readonly" style="font-size: 12px; padding: 5px 10px; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5;">🔒 Toggle Read-Only (setReadOnly)</button>
+                <button type="button" id="btn-api-toggle-gutter" style="font-size: 12px; padding: 5px 10px;">🔢 Toggle Line Numbers (setLineNumbers)</button>
+                <button type="button" id="btn-api-tabsize" style="font-size: 12px; padding: 5px 10px;">📏 Toggle TabSize 2/4 (setTabSize)</button>
+                <button type="button" id="btn-api-thai-sample" style="font-size: 12px; padding: 5px 10px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #6ee7b7;">🇹🇭 Test Thai & Emoji Sample</button>
+                <button type="button" id="btn-api-long-line" style="font-size: 12px; padding: 5px 10px; background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #93c5fd;">↔️ Test Long Line Scroll (colToX)</button>
+                <button type="button" id="btn-api-multilang-html" style="font-size: 12px; padding: 5px 10px; background: rgba(168, 85, 247, 0.2); border: 1px solid #a855f7; color: #d8b4fe;">🌐 Test HTML + Embedded CSS/JS</button>
+            </div>
+        </div>
+        </div>
+
+        <!-- Section 2: Live Speed Benchmark Results -->
+        <div class="card" id="benchmark-card" style="display: none;">
+            <h2 style="margin: 0 0 0.5rem; font-size: 1.25rem;">⚡ Benchmark Results (100 Iterations)</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin: 0;">
+                Benchmarking pure tokenization throughput of HidekoV8 Mini-Monarch Engine against realistic multi-language code.
+            </p>
+            <div class="benchmark-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Time</div>
+                    <div class="stat-value" id="stat-total-time">0 ms</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg Per Iteration</div>
+                    <div class="stat-value" id="stat-avg-time">0 ms</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Throughput</div>
+                    <div class="stat-value" id="stat-ops">0 ops/sec</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Chars Processed</div>
+                    <div class="stat-value" id="stat-chars">0 chars</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Feature Highlights -->
+        <div class="features-grid">
+            <div class="feature-item">
+                <h3>⌨️ Smart Shortcuts</h3>
+                <p>Auto-closing brackets <code>()</code>, <code>[]</code>, <code>{}</code>, quotes, <code>Tab</code>/<code>Shift+Tab</code> indentation, and <code>Cmd+/</code> (or <code>Ctrl+/</code>) line comment toggle.</p>
+            </div>
+            <div class="feature-item">
+                <h3>🎨 14 Golden Token Classes</h3>
+                <p>Variables (<code>.mtk11</code>) are cleanly separated from functions (<code>.mtk10</code>), with distinct operators (<code>.mtk12</code>), booleans (<code>.mtk13</code>), and regex (<code>.mtk14</code>).</p>
+            </div>
+            <div class="feature-item">
+                <h3>🎭 Multi-Theme System</h3>
+                <p>7 built-in themes (Dracula, One Dark, Nord, Monokai, VS Code Dark/Light, GitHub Dark) built with CSS variables for instantaneous runtime switching.</p>
+            </div>
+            <div class="feature-item">
+                <h3>📑 Line Highlighting</h3>
+                <p>Decorate specific line ranges in documentation or blog posts with <code>h-highlight="2-5,8"</code> for clear visual emphasis.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Load ESM Bundle & Default Language -->
+    <script type="module">
+        import * as HidekoLib from '../dist/hidekomaxline.js';
+        import defaultLangMod from '../dist/languages/javascript.js';
+
+        window.hidekomaxline = HidekoLib;
+        window.Hideko = HidekoLib.Hideko;
+        if (defaultLangMod && defaultLangMod.language) {
+            HidekoLib.Hideko.registerLanguage('javascript', defaultLangMod.language, defaultLangMod.conf || {});
+        }
+        const samples = {
+            javascript: `// Hideko V8: High-Performance Mini-Monarch Engine
+import { calculateMetrics } from './analytics.js';
+
+const API_KEY = "sk_live_99218274aefb";
+let requestCount = 42;
+const isProduction = true;
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/;
+
+/**
+ * Process incoming payload with error handling
+ * @param {string} rawInput 
+ * @returns {object} result
+ */
+function handleRequest(rawInput) {
+    if (!rawInput || !isProduction) {
+        return { success: false, code: 400 };
+    }
+    
+    // Compute elapsed timing
+    const startTime = performance.now();
+    const cleanData = rawInput.trim();
+    
+    requestCount += 1;
+    console.log(\`[Request #\${requestCount}] Parsed \${cleanData.length} bytes\`);
+    
+    return {
+        success: true,
+        duration: performance.now() - startTime,
+        data: cleanData
+    };
+}`,
+            typescript: `interface UserSession {
+    userId: string;
+    roles: Array<'admin' | 'editor' | 'viewer'>;
+    lastLogin: Date;
+    isActive: boolean;
+}
+
+export class AuthenticationManager {
+    private activeSessions = new Map<string, UserSession>();
+
+    public registerSession(session: UserSession): boolean {
+        if (!session.isActive) return false;
+        this.activeSessions.set(session.userId, session);
+        return true;
+    }
+}`,
+            python: `# Python 3 High-Performance Task Runner
+import time
+import re
+from typing import Dict, Any
+
+MAX_CONCURRENT_TASKS = 100
+REGEX_PATTERN = r"\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b"
+
+class TaskWorker:
+    def __init__(self, worker_id: int):
+        self.worker_id = worker_id
+        self.is_running = True
+
+    def execute(self, payload: Dict[str, Any]) -> bool:
+        """Executes a unit of work safely."""
+        start = time.perf_counter()
+        if not payload.get("enabled", False):
+            return False
+        
+        # Simulating heavy operations
+        print(f"Worker {self.worker_id} processed item in {time.perf_counter() - start:.4f}s")
+        return True`,
+            c: `#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#define MAX_BUFFER 1024
+
+// Structure for fast telemetry node
+typedef struct Node {
+    int id;
+    double latency;
+    struct Node* next;
+} Node;
+
+int main(int argc, char** argv) {
+    printf("HidekoV8 C Engine Initialized\\n");
+    
+    Node* head = (Node*)malloc(sizeof(Node));
+    if (!head) return -1;
+    
+    head->id = 1;
+    head->latency = 0.42;
+    head->next = NULL;
+    
+    free(head);
+    return 0;
+}`,
+            html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hideko V8 Showcase</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="hero-section">
+        <h1>Welcome to Hideko V8</h1>
+        <p class="tagline">Next-generation Syntax Highlighter</p>
+    </header>
+</body>
+</html>`,
+            css: `:root {
+    --primary-color: #8b5cf6;
+    --font-stack: 'Inter', sans-serif;
+}
+
+.code-container {
+    display: flex;
+    position: relative;
+    background: #1e1e1e;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.code-container:hover {
+    border-color: var(--primary-color);
+}`,
+            sql: `-- Querying Active Transactions with High Value
+SELECT 
+    o.order_id,
+    c.customer_name,
+    COUNT(i.item_id) AS total_items,
+    SUM(i.price * i.quantity) AS grand_total,
+    o.created_at
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+LEFT JOIN order_items i ON o.order_id = i.order_id
+WHERE o.status = 'COMPLETED' AND o.created_at >= '2026-01-01'
+GROUP BY o.order_id, c.customer_name
+HAVING SUM(i.price * i.quantity) > 1000.00
+ORDER BY grand_total DESC;`,
+            json: `{
+  "name": "lib-hidekov8",
+  "version": "1.1.0",
+  "features": [
+    "Mini-Monarch Lexer",
+    "14 Token Classes",
+    "Interactive Editor",
+    "Zero Dependencies"
+  ],
+  "benchmarks": {
+    "speedMs": 0.45,
+    "opsPerSec": 2200
+  },
+  "isProduction": true
+}`,
+            markdown: `# Project Documentation: Hideko V8
+
+Hideko V8 is an ultra-fast **syntax highlighting** engine inspired by VS Code's Monarch Lexer.
+
+### Key Features
+- **14 Token Classes**: Clear visual separation of tokens
+- **Interactive Editor**: Line numbers, shortcuts, undo/redo
+- **Multi-Theme Presets**: Switch instantly without lag
+
+> *"Performance is not just a feature; it is the foundation."*
+`,
+            shell: `#!/usr/bin/env bash
+# Deploy script for Hideko V8 Library
+
+set -euo pipefail
+APP_DIR="/var/www/hideko"
+
+echo "==> Starting build pipeline..."
+npm install --frozen-lockfile
+npm run build
+
+echo "==> Deploying distribution assets to $APP_DIR"
+rsync -avz --delete ./dist/ "$APP_DIR/dist/"
+
+echo "✅ Deployment completed successfully!"`
+        };
+
+        // Configure language basePath & Library facade
+        if (HidekoLib && HidekoLib.Hideko) {
+            HidekoLib.Hideko.config.basePath = '../dist/languages/';
+        }
+
+        // Initialize Editor
+        const editorContainer = document.getElementById('main-editor');
+        editorContainer.classList.add('hideko-editor-container', 'hideko-theme-block');
+        editorContainer.setAttribute('data-theme', 'dark');
+
+        const editor = new HidekoLib.HidekoEditor(editorContainer);
+        editor.setText(samples.javascript);
+        editor.setLanguage('javascript');
+
+        let keyStartTime = 0;
+        window.addEventListener("keydown", () => {
+            keyStartTime = performance.now();
+        }, true);
+
+        // Status bar listener
+        editorContainer.addEventListener('editorUpdate', (e) => {
+            if (keyStartTime > 0) {
+                const latency = (performance.now() - keyStartTime).toFixed(2);
+                keyStartTime = 0;
+                const latencyEl = document.getElementById('sb-latency');
+                if (latencyEl) {
+                    latencyEl.textContent = `⚡ Latency: ${latency} ms`;
+                    latencyEl.style.color = Number(latency) < 15 ? '#4ade80' : '#f87171';
+                }
+            }
+            const line = editor.getCurrentLine();
+            document.getElementById('sb-line').textContent = `Ln ${line}, Col 1`;
+            document.getElementById('sb-mem').textContent = `RAM: ~${editor.estimateMemory()} MB`;
+        });
+
+        // WebApp Public API Event Listener
+        const sbSelection = document.getElementById('sb-selection');
+        const apiStatus = document.getElementById('api-status');
+
+        editor.on('selectionChange', (e) => {
+            const cursor = e.cursor;
+            document.getElementById('sb-line').textContent = `Ln ${cursor.line}, Col ${cursor.col}`;
+
+            if (e.selection && !e.selection.isCollapsed) {
+                const s = e.selection;
+                sbSelection.textContent = `Selected: Ln ${s.startLine}, Col ${s.startCol} → Ln ${s.endLine}, Col ${s.endCol} (${e.selectedText.length} chars)`;
+                sbSelection.style.color = '#38bdf8';
+            } else {
+                sbSelection.textContent = 'Selection: None';
+                sbSelection.style.color = '#94a3b8';
+            }
+        });
+
+        // WebApp Public API Button Actions
+        document.getElementById('btn-api-select-all')?.addEventListener('click', () => {
+            editor.selectAll();
+            apiStatus.textContent = `selectAll() called: ${editor.getLineCount()} lines selected`;
+        });
+
+        document.getElementById('btn-api-select-range')?.addEventListener('click', () => {
+            editor.setSelection(2, 1, 5, 20);
+            apiStatus.textContent = `setSelection(2, 1, 5, 20) called`;
+        });
+
+        document.getElementById('btn-api-get-info')?.addEventListener('click', () => {
+            const sel = editor.getSelection();
+            const text = editor.getSelectedText();
+            const summary = sel.isCollapsed
+                ? `No selection (Cursor at Ln ${sel.startLine}, Col ${sel.startCol})`
+                : `Selected Ln ${sel.startLine}-${sel.endLine} (${text.length} chars): "${text.slice(0, 30)}${text.length > 30 ? '...' : ''}"`;
+            apiStatus.textContent = summary;
+            console.log('editor.getSelection():', sel);
+            console.log('editor.getSelectedText():', text);
+        });
+
+        document.getElementById('btn-api-replace')?.addEventListener('click', () => {
+            editor.replaceSelection('/* REPLACED_BY_WEBAPP */');
+            apiStatus.textContent = `replaceSelection('/* REPLACED_BY_WEBAPP */') called`;
+        });
+
+        document.getElementById('btn-api-jump-50k')?.addEventListener('click', () => {
+            if (editor.getLineCount() < 50000) {
+                // Generate 100k first if not generated
+                document.getElementById('btn-100k').click();
+            }
+            editor.scrollToLine(50000, 'center');
+            editor.setCursorPosition(50000, 1);
+            apiStatus.textContent = `Jumped to Line 50,000 via scrollToLine(50000)`;
+        });
+
+        document.getElementById('btn-api-clear-sel')?.addEventListener('click', () => {
+            editor.clearSelection();
+            apiStatus.textContent = `clearSelection() called`;
+        });
+
+        // Toggle Read-Only
+        document.getElementById('btn-api-toggle-readonly')?.addEventListener('click', () => {
+            const current = editor.isReadOnly();
+            editor.setReadOnly(!current);
+            apiStatus.textContent = `setReadOnly(${!current}) — Read-only mode ${!current ? 'ENABLED' : 'DISABLED'}`;
+        });
+
+        // Toggle Line Numbers
+        let gutterVisible = true;
+        document.getElementById('btn-api-toggle-gutter')?.addEventListener('click', () => {
+            gutterVisible = !gutterVisible;
+            editor.setLineNumbers(gutterVisible);
+            apiStatus.textContent = `setLineNumbers(${gutterVisible}) — Gutter ${gutterVisible ? 'SHOWN' : 'HIDDEN'}`;
+        });
+
+        // Toggle Tab Size (2 / 4)
+        document.getElementById('btn-api-tabsize')?.addEventListener('click', () => {
+            const currentTab = editor.getTabSize();
+            const nextTab = currentTab === 4 ? 2 : 4;
+            editor.setTabSize(nextTab);
+            apiStatus.textContent = `setTabSize(${nextTab}) — Indent set to ${nextTab} spaces`;
+        });
+
+        // Test Thai & Emoji Sample
+        document.getElementById('btn-api-thai-sample')?.addEventListener('click', () => {
+            const sample = `// ทดสอบภาษาไทยและ Emoji สำหรับ Hideko Lite Editor
+function สวัสดีชาวโลก(ชื่อ, อายุ = 25) {
+    console.log(\`สวัสดีคุณ \${ชื่อ}! ยินดีต้อนรับสู่อิดิเตอร์สายฟ้า ⚡🚀\`);
+    const ผลลัพธ์ = {
+        สถานะ: "เรียบร้อยดี 🎉",
+        ความเร็ว: "ต่ำกว่า 1ms สุดยอดมาก 🔥",
+        ข้อความยาว: "การจัดตำแหน่งเคอร์เซอร์บนสระภาษาไทย เช่น เ, ิ, ี, ึ, ื, ุ, ู, ่, ้, ๊, ๋ แม่นยำระดับพิกเซล!"
+    };
+    return ผลลัพธ์;
+}
+
+สวัสดีชาวโลก("สมชาย", 30);
+`;
+            editor.setText(sample);
+            apiStatus.textContent = `Loaded Thai & Emoji test sample (Exact cursor alignment tested)`;
+        });
+
+        // Test Long Line Horizontal Scroll
+        document.getElementById('btn-api-long-line')?.addEventListener('click', () => {
+            const longLine = `// Test Line With Massive Horizontal Width (>250 characters)\nconst ultraLongConfigurationMatrix = { "id": "0xABCDEF1234567890", "payload": { "type": "EVENT_STREAM_RECORD", "metadata": { "client": "HidekoLiteV8", "timestamp": "2026-10-05T12:00:00.000Z", "signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "tags": ["virtual-scroll", "monarch-engine", "high-performance", "sub-millisecond", "horizontal-sizer"] } } };\n`;
+            editor.setText(longLine + `console.log("End of sample");\n`);
+            apiStatus.textContent = `Loaded long line (>250 chars) — Test horizontal scrolling`;
+        });
+
+        // Test Multi-Language HTML with Embedded CSS & JS
+        document.getElementById('btn-api-multilang-html')?.addEventListener('click', async () => {
+            const multiLangHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hideko Multi-Language Embedded Demo</title>
+    <style>
+        /* Embedded CSS highlighted by CSS Monarch Lexer */
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: system-ui, sans-serif;
+            margin: 0;
+            padding: 2rem;
+        }
+        .card {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+    <\/style>
+    <script>
+        // Embedded JavaScript highlighted by JS Monarch Lexer
+        function calculateThroughput(totalLines, durationMs) {
+            const linesPerSec = (totalLines / (durationMs / 1000)).toFixed(0);
+            console.log(\`Processed \${totalLines} lines in \${durationMs}ms (\${linesPerSec} lines/s)\`);
+            return {
+                speed: linesPerSec,
+                status: "⚡ Sub-millisecond execution verified"
+            };
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            const res = calculateThroughput(100000, 4.2);
+            document.getElementById("output").textContent = res.status;
+        });
+    <\/script>
+</head>
+<body>
+    <div class="card">
+        <h1>Welcome to Hideko Lite Multi-Language Engine!</h1>
+        <p id="output">Loading embedded execution...</p>
+    </div>
+</body>
+</html>
+`;
+            await editor.setLanguage('html');
+            const langSelect = document.getElementById('lang-select');
+            if (langSelect) langSelect.value = 'html';
+            document.getElementById('sb-lang').textContent = 'Language: HTML (Embedded CSS + JS)';
+            editor.setText(multiLangHtml);
+            apiStatus.textContent = 'Loaded Multi-Language HTML with embedded CSS (<style>) and JS (<script>)';
+        });
+
+        // 40,000 and 100,000 Lines Test Generators
+        document.getElementById('btn-40k')?.addEventListener('click', () => {
+            const line = "const dataSample = computeRecord({ id: 1042, user: 'hideko', verified: true, score: 98.5 });\n";
+            const content = line.repeat(40000);
+            editor.setText(content);
+            document.getElementById('sb-mem').textContent = `RAM: ~${editor.estimateMemory()} MB`;
+        });
+
+        document.getElementById('btn-100k')?.addEventListener('click', () => {
+            const line = "const record = { active: true, timestamp: Date.now(), hash: '0x94f8a3' };\n";
+            const content = line.repeat(100000);
+            editor.setText(content);
+            document.getElementById('sb-mem').textContent = `RAM: ~${editor.estimateMemory()} MB`;
+        });
+
+        // Theme Switcher
+        const themeSelect = document.getElementById('theme-select');
+        themeSelect.addEventListener('change', (e) => {
+            const selectedTheme = e.target.value;
+            HidekoLib.Hideko.setTheme(selectedTheme);
+            editorContainer.setAttribute('data-theme', selectedTheme);
+            document.getElementById('sb-theme').textContent = `Theme: ${e.target.options[e.target.selectedIndex].text}`;
+
+            // Also update static preview if present
+            const pre = document.querySelector('#static-output pre');
+            if (pre) pre.setAttribute('data-theme', selectedTheme);
+        });
+
+        // Language Switcher
+        const langSelect = document.getElementById('lang-select');
+        langSelect.addEventListener('change', async (e) => {
+            const lang = e.target.value;
+            document.getElementById('sb-lang').textContent = `Language: ${e.target.options[e.target.selectedIndex].text}`;
+            if (samples[lang]) {
+                editor.setText(samples[lang]);
+            }
+            await editor.setLanguage(lang);
+        });
+
+        // File Upload
+        document.getElementById('file-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const content = event.target.result;
+                editor.setText(content);
+
+                // Auto-detect language
+                const detected = HidekoLib.Hideko.detectLanguage(file.name);
+                if (detected) {
+                    langSelect.value = detected;
+                    await editor.setLanguage(detected);
+                    document.getElementById('sb-lang').textContent = `Language: ${detected}`;
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // Mode Toggle (Interactive Editor vs Static View with line highlight)
+        const toggleBtn = document.getElementById('btn-toggle-mode');
+        const editorWrapper = document.getElementById('editor-wrapper');
+        const staticPreview = document.getElementById('static-preview');
+        const staticOutput = document.getElementById('static-output');
+        let isEditorMode = true;
+
+        toggleBtn.addEventListener('click', async () => {
+            isEditorMode = !isEditorMode;
+            if (!isEditorMode) {
+                toggleBtn.textContent = 'Switch to Editor Mode';
+                editorWrapper.style.display = 'none';
+                staticPreview.style.display = 'block';
+
+                const codeText = editor.getText();
+                const lang = langSelect.value;
+                const theme = themeSelect.value;
+
+                staticOutput.innerHTML = `
+                    <pre class="hideko" h-lang="${lang}" h-highlight="2-5,8" data-theme="${theme}">${escapeHtml(codeText)}</pre>
+                `;
+                HidekoLib.Hideko.Run({
+                    theme: theme
+                });
+            } else {
+                toggleBtn.textContent = 'Switch to Static View';
+                editorWrapper.style.display = 'block';
+                staticPreview.style.display = 'none';
+            }
+        });
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // Live Benchmark Runner
+        const benchmarkBtn = document.getElementById('btn-run-benchmark');
+        const benchmarkCard = document.getElementById('benchmark-card');
+
+        benchmarkBtn.addEventListener('click', async () => {
+            benchmarkBtn.disabled = true;
+            benchmarkBtn.textContent = '⏳ Running...';
+            benchmarkCard.style.display = 'block';
+
+            await new Promise(r => setTimeout(r, 50)); // let UI update
+
+            const sampleCode = editor.getText();
+            const lang = langSelect.value;
+            const iterations = 100;
+
+            const mod = await HidekoLib.Hideko.loadLanguage(lang);
+            const langDef = mod ? mod.language : {};
+            const conf = mod ? mod.conf : {};
+
+            const startTime = performance.now();
+            for (let i = 0; i < iterations; i++) {
+                HidekoLib.highlight(sampleCode, langDef, conf);
+            }
+            const endTime = performance.now();
+
+            const totalTime = endTime - startTime;
+            const avgTime = totalTime / iterations;
+            const opsPerSec = Math.round((iterations / (totalTime / 1000)));
+            const totalChars = sampleCode.length * iterations;
+
+            document.getElementById('stat-total-time').textContent = `${totalTime.toFixed(1)} ms`;
+            document.getElementById('stat-avg-time').textContent = `${avgTime.toFixed(2)} ms`;
+            document.getElementById('stat-ops').textContent = `${opsPerSec.toLocaleString()} ops/s`;
+            document.getElementById('stat-chars').textContent = `${(totalChars / 1000).toFixed(0)}k chars`;
+
+            benchmarkBtn.disabled = false;
+            benchmarkBtn.textContent = '⚡ Run Benchmark';
+        });
+    </script>
+</body>
+
+</html>
